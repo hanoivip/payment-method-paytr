@@ -125,7 +125,7 @@ class PaytrMethod implements IPaymentMethod
         {
             $cfg = $session->getSecureData();
             srand(time());
-            $merchant_oid = rand();
+            $merchant_oid = $trans->trans_id;
             $userIp = '1.1.1.1';
             $installment_count = 0;
             $test_mode = $this->isTestMode() ? "1" : "0";
