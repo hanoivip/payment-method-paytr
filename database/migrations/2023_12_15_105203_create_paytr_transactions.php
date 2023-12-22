@@ -6,24 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 class CreatePaytrTransactions extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('paytr_transactions', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->string('trans');
+            $table->string('mapping');
+            $table->integer('status')->default(0);
+            $table->text('html')->nullable();
+            $table->float('amount')->default(0);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('paytr_transactions');

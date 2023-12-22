@@ -1,6 +1,6 @@
 @extends('hanoivip::layouts.app')
 
-@section('title', 'Nạp game với thẻ cào.')
+@section('title', 'Pay the order via Paytr')
 
 @section('content')
 
@@ -24,8 +24,8 @@
     <label>Card CVV:</label>
     <input type="text" name="cvv" value="000"><br>
     <input type="checkbox" name="savecard" value="true" />
-    <label>Save for using later</label>
-	<button type="submit">Pay</button>
+    <label>Save for using later</label><br/>
+	<button type="submit" class="btn btn-primary">Pay</button>
 </form>
 
 @endsection

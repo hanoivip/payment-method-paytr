@@ -11,7 +11,11 @@ use Exception;
 use Hanoivip\PaymentMethodContract\IPaymentSession;
 use Hanoivip\Shop\Facades\OrderFacade;
 use Mervick\CurlHelper;
-
+/**
+ * Ref https://dev.paytr.com/iframe-api
+ * @author GameOH
+ *
+ */
 class PaytrMethod implements IPaymentMethod
 {
     const MAX_BASKET_SIZE = 3;
@@ -19,6 +23,12 @@ class PaytrMethod implements IPaymentMethod
     const SESSION_TIMEOUT = 15 * 60;
     
     private $config;
+    
+    const STATUS_INIT = 0;
+    const STATUS_PENDING = 1;
+    const STATUS_CANCEL = 2;
+    const STATUS_SUCCESS = 3;
+    const STATUS_FAILURE = 4;
     
     public function endTrans($trans)
     {}
@@ -43,6 +53,7 @@ class PaytrMethod implements IPaymentMethod
         $log = new PaytrTransaction();
         $log->trans = $trans->trans_id;
         $log->mapping = $trans->trans_id;
+        $log->status = self::STATUS_INIT;
         $log->save();
         $session = new PaytrSession($trans, $card, $this->config);
         $this->saveSession($trans->trans_id, $session);
@@ -94,20 +105,26 @@ class PaytrMethod implements IPaymentMethod
             return new PaytrFailure($trans, __('hanoivip.paytr::paytr.failure.missing-params'));
         }
         $savecard = !empty($params['savecard']);
+        $record = PaytrTransaction::where('trans', $trans->trans_id)->first();
+        if (empty($record))
+        {
+            return new PaytrFailure($trans, __('hanoivip.paytr::paytr.failure.trans-not-exists'));
+        }
         $session = $this->getSession($trans->trans_id);
         if (empty($session))
         {
             return new PaytrFailure($trans, __('hanoivip.paytr::paytr.failure.timeout'));
         }
         // order detail
-        $orderDetail = OrderFacade::detail($trans->trans_id);
+        //Log::error('trans id ' . $trans->trans_id);
+        $orderDetail = OrderFacade::detail($trans->order);
         $amount = $orderDetail->price;
         $currency = $orderDetail->currency;
         // request to paytr
         try
         {
             $cfg = $session->getSecureData();
-            srand(time(null));
+            srand(time());
             $merchant_oid = rand();
             $userIp = '1.1.1.1';
             $installment_count = 0;
@@ -145,19 +162,24 @@ class PaytrMethod implements IPaymentMethod
             ->setPostParams($params)
             ->exec();
             // maybe redirect response here
-            if ($response['status'] != 200 || empty($response['data']))
+            if ($response['status'] != 200)
             {
-                Log::error("Paytr step 1 error");
+                Log::error("Paytr step 1 error. Stauts " . $response['status']  . ' Content ' . $response['content']);
                 return new PaytrFailure($trans, __('hanoivip.paytr::paytr.failure.step1-error'));
             }
-            if ($response['data']['status'] == 'failed')
+            //Log::debug(print_r($response['content'], true));
+            /*
+            if (!empty($response['data']))
             {
-                return new PaytrFailure($trans, $response['data']['msg']);
-            }
-            if ($response['data']['status'] == 'wait_callback')
-            {
-                return new PaytrPending($trans);
-            }
+                if ($response['data']['status'] == 'failed')
+                {
+                    return new PaytrFailure($trans, $response['data']['reason']);
+                }
+                if ($response['data']['status'] == 'wait_callback')
+                {
+                    return new PaytrPending($trans);
+                }
+            }*/
             if ($savecard)
             {
                 $card = new PaytrCard();
@@ -167,9 +189,13 @@ class PaytrMethod implements IPaymentMethod
                 $card->expire_month = $params['expiry_month'];
                 $card->expire_year = $params['expiry_year'];
                 $card->cvv = $params['cvv'];
-                $card->save();
+                $card->updateOrCreate();
             }
-            return new PaytrSuccess();
+            // save transaction
+            $record->html = $response['content'];
+            $record->status = self::STATUS_PENDING;
+            $record->save();
+            return new PaytrPending($trans, $response['content']);
         }
         catch (Exception $ex)
         {
@@ -184,7 +210,22 @@ class PaytrMethod implements IPaymentMethod
     }
 
     public function query($trans, $force = false)
-    {}
+    {
+        $record = PaytrTransaction::where('trans', $trans->trans_id)->first();
+        switch ($record->status)
+        {
+            case self::STATUS_CANCEL:
+                return new PaytrFailure($trans, "cancel");
+            case self::STATUS_PENDING:
+                return new PaytrPending($trans, $record->html);
+            case self::STATUS_FAILURE:
+                return new PaytrFailure($trans, "fail");
+            case self::STATUS_SUCCESS:
+                return new PaytrSuccess($trans);
+            default:
+                return new PaytrFailure($trans, "invalid");
+        }
+    }
 
     public function config($cfg)
     {

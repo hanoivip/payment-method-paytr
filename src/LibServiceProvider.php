@@ -3,7 +3,6 @@
 namespace Hanoivip\PaymentMethodPaytr;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\App;
 
 class LibServiceProvider extends ServiceProvider
 {
