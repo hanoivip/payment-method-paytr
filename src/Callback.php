@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Controller as BaseController;
 use Hanoivip\PaymentContract\Facades\PaymentFacade;
+use Hanoivip\Events\Payment\TransactionUpdated;
 
 class Callback extends BaseController
 {
@@ -28,15 +29,28 @@ class Callback extends BaseController
         
         if( $calhash != $hash )
         {
+            Log::error('Paytr got invalid hash???');
             return response('NOK2');
         }
         if ($status == 'success')
         {
+            // save
+            $record = PaytrTransaction::where('trans', $merchant_oid)->first();
+            if (empty($record))
+            {
+                Log::error('Paytr got invalid transaction ID with success result???' . $merchant_oid);
+                return response('NOK4');
+            }
+            $record->amount = $amount;
+            $record->status = PaytrMethod::STATUS_SUCCESS;
+            $record->save();
             // event here
+            event(new TransactionUpdated($merchant_oid));
             return response('OK');
         }
         else
         {
+            //Log::error('Paytr got failure result!');
             return response('NOK3');
         }
     }

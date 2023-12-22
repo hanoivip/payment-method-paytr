@@ -221,7 +221,7 @@ class PaytrMethod implements IPaymentMethod
             case self::STATUS_FAILURE:
                 return new PaytrFailure($trans, "fail");
             case self::STATUS_SUCCESS:
-                return new PaytrSuccess($trans);
+                return new PaytrSuccess($record);
             default:
                 return new PaytrFailure($trans, "invalid");
         }

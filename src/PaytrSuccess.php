@@ -8,13 +8,13 @@ class PaytrSuccess implements IPaymentResult
 {
     /**
      *
-     * @var string transaction id
+     * @var PaytrTransaction id
      */
-    private $trans;
+    private $record;
     
-    public function __construct($trans)
+    public function __construct($record)
     {
-        $this->trans = $trans;
+        $this->record = $record;
     }
     
     public function getDetail()
@@ -39,7 +39,7 @@ class PaytrSuccess implements IPaymentResult
     
     public function getAmount()
     {
-        return 0;
+        return $this->record->amount;
     }
     
     public function toArray()
@@ -57,7 +57,7 @@ class PaytrSuccess implements IPaymentResult
     
     public function getTransId()
     {
-        return $this->trans->trans_id;
+        return $this->record->trans;
     }
     
     public function getCurrency()

@@ -23,6 +23,7 @@ class LibServiceProvider extends ServiceProvider
     public function register()
     {
         $this->commands([
+            // TODO: need test command, generate callback notification
         ]);
         $this->app->bind("PaytrPaymentMethod", PaytrMethod::class);
     }
