@@ -3,6 +3,7 @@
 namespace Hanoivip\PaymentMethodPaytr;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Controller as BaseController;
 use Hanoivip\PaymentContract\Facades\PaymentFacade;
 
@@ -10,6 +11,7 @@ class Callback extends BaseController
 {
     public function notify(Request $request, $id)
     {
+        Log::error('Paytr got a callback ' . print_r($request->all(), true));
         $config = PaymentFacade::getConfig($id);
         if (empty($config))
         {
