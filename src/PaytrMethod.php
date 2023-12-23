@@ -146,8 +146,8 @@ class PaytrMethod implements IPaymentMethod
                 'currency' => $currency,
                 'test_mode' => $test_mode,
                 'non_3d' => '0',
-                'merchant_ok_url' => route('home'),
-                'merchant_fail_url' => route('home'),
+                'merchant_ok_url' => route('paytr.success'),
+                'merchant_fail_url' => route('paytr.failure'),
                 'user_name' => 'Not your business',
                 'user_address' => 'Not your business',
                 'user_phone' => '05555555555',
@@ -257,6 +257,10 @@ class PaytrMethod implements IPaymentMethod
         }
         return $errors;
     }
-
     
+    public function openPendingPage($trans)
+    {
+        $record = PaytrTransaction::where('trans', $trans->trans_id)->first();
+        return view('hanoivip.paytr::pending-page', ['detail' => $record->html]);
+    }
 }

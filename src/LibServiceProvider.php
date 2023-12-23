@@ -3,6 +3,7 @@
 namespace Hanoivip\PaymentMethodPaytr;
 
 use Illuminate\Support\ServiceProvider;
+use Hanoivip\PaymentMethodPaytr\Commands\FakeCallback;
 
 class LibServiceProvider extends ServiceProvider
 {
@@ -17,13 +18,13 @@ class LibServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
         $this->loadTranslationsFrom( __DIR__.'/../lang', 'hanoivip.paytr');
         $this->mergeConfigFrom( __DIR__.'/../config/paytr.php', 'paytr');
-        $this->loadViewsFrom(__DIR__ . '/../views', 'hanoivip');
+        $this->loadViewsFrom(__DIR__ . '/../views', 'hanoivip.paytr');
     }
     
     public function register()
     {
         $this->commands([
-            // TODO: need test command, generate callback notification
+            FakeCallback::class,
         ]);
         $this->app->bind("PaytrPaymentMethod", PaytrMethod::class);
     }
