@@ -3,6 +3,7 @@
 namespace Hanoivip\PaymentMethodPaytr;
 
 use Hanoivip\PaymentMethodContract\IPaymentSession;
+use Illuminate\Support\Facades\Log;
 
 class PaytrSession implements IPaymentSession
 {
@@ -12,6 +13,7 @@ class PaytrSession implements IPaymentSession
     
     public function __construct($trans, $card, $config)
     {
+        Log::error(print_r($card, true));
         $this->trans = $trans;
         $this->card = $card;
         $this->config = $config;

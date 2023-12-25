@@ -15,7 +15,7 @@ class CreatePaytrCards extends Migration
             $table->string('number');
             $table->integer('expire_month');
             $table->integer('expire_year');
-            $table->integer('cvv');
+            $table->string('cvv');
             $table->timestamps();
         });
     }

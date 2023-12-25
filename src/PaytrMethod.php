@@ -49,7 +49,8 @@ class PaytrMethod implements IPaymentMethod
         // try to load saved card
         $uid = Auth::user()->getAuthIdentifier();
         $card = PaytrCard::where('user_id', $uid)->first();
-        // need to generate mapping to hide transaction
+        if (!empty($card))
+            $card = $card->toArray();
         $log = new PaytrTransaction();
         $log->trans = $trans->trans_id;
         $log->mapping = $trans->trans_id;
@@ -116,7 +117,7 @@ class PaytrMethod implements IPaymentMethod
             return new PaytrFailure($trans, __('hanoivip.paytr::paytr.failure.timeout'));
         }
         // order detail
-        //Log::error('trans id ' . $trans->trans_id);
+        Log::error(print_r($session, true));
         $orderDetail = OrderFacade::detail($trans->order);
         $amount = $orderDetail->price;
         $currency = $orderDetail->currency;
@@ -131,7 +132,7 @@ class PaytrMethod implements IPaymentMethod
             $test_mode = $this->isTestMode() ? "1" : "0";
             $hash_str = $cfg['merchant_id'] . $userIp . $merchant_oid . config('paytr.report_email') . $amount . 'card' . $installment_count. $currency. $test_mode. "0";
             $token = base64_encode(hash_hmac('sha256',$hash_str.$cfg['merchant_salt'],$cfg['merchant_key'],true));
-            $params = [
+            $ppp = [
                 'cc_owner' => $params['card_owner'],
                 'card_number' => $params['card_number'],
                 'expiry_month' => $params['expiry_month'],
@@ -159,7 +160,7 @@ class PaytrMethod implements IPaymentMethod
                 'installment_count' => $installment_count, 
             ];
             $response = CurlHelper::factory(config('paytr.api_url'))
-            ->setPostParams($params)
+            ->setPostParams($ppp)
             ->exec();
             // maybe redirect response here
             if ($response['status'] != 200)
@@ -182,14 +183,19 @@ class PaytrMethod implements IPaymentMethod
             }*/
             if ($savecard)
             {
-                $card = new PaytrCard();
+                //Log::error(print_r($params, true));
+                $card = PaytrCard::where('user_id', $orderDetail->user_id)->first();
+                if (empty($card))
+                {
+                    $card = new PaytrCard();
+                }
                 $card->user_id = $orderDetail->user_id;
                 $card->owner = $params['card_owner'];
                 $card->number = $params['card_number'];
                 $card->expire_month = $params['expiry_month'];
                 $card->expire_year = $params['expiry_year'];
                 $card->cvv = $params['cvv'];
-                $card->updateOrCreate();
+                $card->save();
             }
             // save transaction
             $record->html = $response['content'];
