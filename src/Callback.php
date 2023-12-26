@@ -9,15 +9,17 @@ use Hanoivip\PaymentContract\Facades\PaymentFacade;
 
 class Callback extends BaseController
 {
-    use SuccessTrait;
+    use SuccessTrait, FailureTrait;
     
     public function success(Request $request)
     {
+        Log::error('Paytr got success redirect ' . print_r($request->all(), true));
         return view('hanoivip.paytr::success-page');
     }
     
     public function failure(Request $request)
     {
+        Log::error('Paytr got failure redirect ' . print_r($request->all(), true));
         return view('hanoivip.paytr::success-page');
     }
     
@@ -50,7 +52,7 @@ class Callback extends BaseController
         }
         else
         {
-            //Log::error('Paytr got failure result!');
+            $this->onFailure($merchant_oid);
             return response('NOK3');
         }
     }
