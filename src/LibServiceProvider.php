@@ -26,6 +26,13 @@ class LibServiceProvider extends ServiceProvider
         $this->commands([
             FakeCallback::class,
         ]);
-        $this->app->bind("PaytrPaymentMethod", PaytrMethod::class);
+        if (config('paytr.api', 'iframe') == 'iframe')
+        {
+            $this->app->bind("PaytrPaymentMethod", IframeMethod::class);
+        }
+        else
+        {
+            $this->app->bind("PaytrPaymentMethod", DirectMethod::class);
+        }
     }
 }

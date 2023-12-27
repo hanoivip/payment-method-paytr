@@ -16,13 +16,13 @@ use Mervick\CurlHelper;
  * @author GameOH
  *
  */
-class PaytrMethod implements IPaymentMethod
+class DirectMethod implements IPaymentMethod
 {
     const MAX_BASKET_SIZE = 3;
     
     const SESSION_TIMEOUT = 15 * 60;
     
-    private $config;
+    protected $config;
     
     const STATUS_INIT = 0;
     const STATUS_PENDING = 1;
@@ -61,7 +61,7 @@ class PaytrMethod implements IPaymentMethod
         return $session;
     }
     
-    private function saveSession($transId, $session)
+    protected function saveSession($transId, $session)
     {
         Cache::put('PAYTR_SESSION_' . $transId, $session, Carbon::now()->addSeconds(self::SESSION_TIMEOUT));
     }
@@ -70,7 +70,7 @@ class PaytrMethod implements IPaymentMethod
      * @param string $transId
      * @return IPaymentSession
      */
-    private function getSession($transId)
+    protected function getSession($transId)
     {
         if (Cache::has("PAYTR_SESSION_$transId"))
         {
@@ -82,7 +82,7 @@ class PaytrMethod implements IPaymentMethod
      * @param array $cart
      * @return array
      */
-    private function convertCartToBasket($cart)
+    protected function convertCartToBasket($cart)
     {
         $count = 0;
         $basket = [];
@@ -97,6 +97,7 @@ class PaytrMethod implements IPaymentMethod
 
     public function request($trans, $params)
     {
+        Log::error('22222222222222');
         if (!isset($params['card_owner']) ||
             !isset($params['card_number']) ||
             !isset($params['expiry_month']) ||
@@ -117,7 +118,7 @@ class PaytrMethod implements IPaymentMethod
             return new PaytrFailure($trans, __('hanoivip.paytr::paytr.failure.timeout'));
         }
         // order detail
-        Log::error(print_r($session, true));
+        //Log::error(print_r($session, true));
         $orderDetail = OrderFacade::detail($trans->order);
         $amount = $orderDetail->price;
         $currency = $orderDetail->currency;
@@ -268,5 +269,10 @@ class PaytrMethod implements IPaymentMethod
     {
         $record = PaytrTransaction::where('trans', $trans->trans_id)->first();
         return view('hanoivip.paytr::pending-page', ['detail' => $record->html]);
+    }
+    
+    public function openPaymentPage($transId, $guide, $session)
+    {
+        return view('hanoivip.paytr::payment-page', ['trans' => $transId, 'guide' => $guide, 'data' => $session]);
     }
 }

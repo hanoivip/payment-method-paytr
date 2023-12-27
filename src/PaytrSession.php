@@ -13,7 +13,6 @@ class PaytrSession implements IPaymentSession
     
     public function __construct($trans, $card, $config)
     {
-        Log::error(print_r($card, true));
         $this->trans = $trans;
         $this->card = $card;
         $this->config = $config;
