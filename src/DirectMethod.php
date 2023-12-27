@@ -97,7 +97,6 @@ class DirectMethod implements IPaymentMethod
 
     public function request($trans, $params)
     {
-        Log::error('22222222222222');
         if (!isset($params['card_owner']) ||
             !isset($params['card_number']) ||
             !isset($params['expiry_month']) ||

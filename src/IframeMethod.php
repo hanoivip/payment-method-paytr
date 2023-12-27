@@ -16,7 +16,6 @@ class IframeMethod extends DirectMethod
 {
     public function request($trans, $params)
     {
-        Log::error('11111111111111');
         $record = PaytrTransaction::where('trans', $trans->trans_id)->first();
         if (empty($record))
         {
@@ -29,7 +28,7 @@ class IframeMethod extends DirectMethod
         }
         // order detail
         $orderDetail = OrderFacade::detail($trans->order);
-        $amount = $orderDetail->price;
+        $amount = int($orderDetail->price * 100);
         $currency = $orderDetail->currency;
         // request to paytr
         try

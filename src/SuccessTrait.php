@@ -9,7 +9,7 @@ trait SuccessTrait {
         // save
         $record = PaytrTransaction::where('trans', $transId)->first();
         $record->amount = $amount;
-        $record->status = PaytrMethod::STATUS_SUCCESS;
+        $record->status = DirectMethod::STATUS_SUCCESS;
         $record->save();
         // event here
         event(new TransactionUpdated($transId));
