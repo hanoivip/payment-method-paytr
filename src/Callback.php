@@ -5,6 +5,7 @@ namespace Hanoivip\PaymentMethodPaytr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Controller as BaseController;
+use Exception;
 use Hanoivip\PaymentContract\Facades\PaymentFacade;
 
 class Callback extends BaseController
@@ -25,35 +26,43 @@ class Callback extends BaseController
     
     public function notify(Request $request, $id)
     {
-        Log::error('Paytr got a callback ' . print_r($request->all(), true));
-        $config = PaymentFacade::getConfig($id);
-        if (empty($config))
+        try
         {
-            return response('NOK1');
+            Log::error('Paytr got a callback ' . print_r($request->all(), true));
+            $config = PaymentFacade::getConfig($id);
+            if (empty($config))
+            {
+                return response('NOK1');
+            }
+            $merchant_key 	= $config['merchant_key'];
+            $merchant_salt	= $config['merchant_salt'];
+            $merchant_oid   = $request->input('merchant_oid'); // == mapping transid
+            $status         = $request->input('status');
+            $amount         = $request->input('total_amount');
+            $hash = $request->input('hash');
+            
+            $calhash = base64_encode( hash_hmac('sha256', $merchant_oid.$merchant_salt.$status.$amount, $merchant_key, true) );
+            
+            if( $calhash != $hash )
+            {
+                Log::error('Paytr got invalid hash???');
+                return response('NOK2');
+            }
+            if ($status == 'success')
+            {
+                $this->onSuccess($merchant_oid, $amount);
+                return response('OK');
+            }
+            else
+            {
+                $this->onFailure($merchant_oid);
+                return response('NOK3');
+            }
         }
-        $merchant_key 	= $config['merchant_key'];
-        $merchant_salt	= $config['merchant_salt'];
-        $merchant_oid   = $request->input('merchant_oid'); // == mapping transid
-        $status         = $request->input('status');
-        $amount         = $request->input('total_amount');
-        $hash = $request->input('hash');
-        
-        $calhash = base64_encode( hash_hmac('sha256', $merchant_oid.$merchant_salt.$status.$amount, $merchant_key, true) );
-        
-        if( $calhash != $hash )
+        catch (Exception $ex)
         {
-            Log::error('Paytr got invalid hash???');
-            return response('NOK2');
-        }
-        if ($status == 'success')
-        {
-            $this->onSuccess($merchant_oid, $amount);
-            return response('OK');
-        }
-        else
-        {
-            $this->onFailure($merchant_oid);
-            return response('NOK3');
+            Log::error("Paytr callback exception: " . $ex->getMessage());
+            return response('NOK4');
         }
     }
 }
