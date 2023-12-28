@@ -28,7 +28,7 @@ class IframeMethod extends DirectMethod
         }
         // order detail
         $orderDetail = OrderFacade::detail($trans->order);
-        $amount = int($orderDetail->price * 100);
+        $amount = intval($orderDetail->price * 100);
         $currency = $orderDetail->currency;
         // request to paytr
         try
