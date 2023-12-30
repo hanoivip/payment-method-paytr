@@ -21,7 +21,7 @@ class Callback extends BaseController
     public function failure(Request $request)
     {
         Log::error('Paytr got failure redirect ' . print_r($request->all(), true));
-        return view('hanoivip.paytr::success-page');
+        return view('hanoivip.paytr::failure-page');
     }
     
     public function notify(Request $request, $id)
@@ -32,7 +32,7 @@ class Callback extends BaseController
             $config = PaymentFacade::getConfig($id);
             if (empty($config))
             {
-                return response('NOK1');
+                return response('OK');
             }
             $merchant_key 	= $config['merchant_key'];
             $merchant_salt	= $config['merchant_salt'];
@@ -46,7 +46,7 @@ class Callback extends BaseController
             if( $calhash != $hash )
             {
                 Log::error('Paytr got invalid hash???');
-                return response('NOK2');
+                return response('OK');
             }
             if ($status == 'success')
             {
@@ -56,13 +56,13 @@ class Callback extends BaseController
             else
             {
                 $this->onFailure($merchant_oid);
-                return response('NOK3');
+                return response('OK');
             }
         }
         catch (Exception $ex)
         {
             Log::error("Paytr callback exception: " . $ex->getMessage());
-            return response('NOK4');
+            return response('OK');
         }
     }
 }
