@@ -36,7 +36,7 @@ class IframeMethod extends DirectMethod
             $cfg = $session->getSecureData();
             srand(time());
             $merchant_oid = $trans->trans_id;
-            $userIp = '1.1.1.1';
+            $userIp = request()->headers->get('X-Forwarded-For');//Cloudflare proxy;
             $no_installment = 0;
             $max_installment = 0;
             $test_mode = $this->isTestMode() ? "1" : "0";

@@ -32,7 +32,6 @@
 		"php" : ">=7.0.0",
 		"fideloper/proxy" : "~4.0",
 		"laravel/framework" : ">=5.8",
-		"laravel/tinker" : "~1.0",
 		"hanoivip/payment-method-contract" : "dev-main",
 		"hanoivip/events" : "dev-master",
 		"hanoivip/payment-contract": "dev-main",
