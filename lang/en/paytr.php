@@ -8,5 +8,11 @@ return [
         'step1-error' => 'Payment error. Please retry before contact our customer service.',
         'step1-exception' => 'Payment error. Contact our customer service for helps'
     ],
-    
+    'status' => [
+        0 => 'Not processed',
+        1 => 'Payment pending',
+        2 => 'Payment cancel',
+        3 => 'Payment success',
+        4 => 'Payment failure',
+    ],
 ];

@@ -3,6 +3,7 @@
 namespace Hanoivip\PaymentMethodPaytr;
 
 use Carbon\Carbon;
+use Hanoivip\CurlHelper;
 use Hanoivip\PaymentMethodContract\IPaymentMethod;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -10,7 +11,6 @@ use Illuminate\Support\Facades\Log;
 use Exception;
 use Hanoivip\PaymentMethodContract\IPaymentSession;
 use Hanoivip\Shop\Facades\OrderFacade;
-use Mervick\CurlHelper;
 /**
  * Ref https://dev.paytr.com/iframe-api
  * @author GameOH

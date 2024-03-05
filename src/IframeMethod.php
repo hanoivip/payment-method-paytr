@@ -2,9 +2,9 @@
 
 namespace Hanoivip\PaymentMethodPaytr;
 
+use Hanoivip\CurlHelper;
 use Hanoivip\Shop\Facades\OrderFacade;
 use Illuminate\Support\Facades\Log;
-use Mervick\CurlHelper;
 use Exception;
 
 /**
