@@ -56,7 +56,7 @@ class IframeMethod extends DirectMethod
                 'max_installment'=>$max_installment,
                 'user_name'=>'hidden',
                 'user_address'=>'hidden',
-                'user_phone'=>'hidden',
+                'user_phone'=>'9033366688',
                 'merchant_ok_url'=>route('paytr.success'),
                 'merchant_fail_url'=>route('paytr.failure'),
                 'timeout_limit'=>15,
