@@ -6,6 +6,7 @@ use Hanoivip\CurlHelper;
 use Hanoivip\Shop\Facades\OrderFacade;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Hanoivip\Payment\Facades\BalanceFacade;
 
 /**
  * Ref https://dev.paytr.com/iframe-api
@@ -30,6 +31,12 @@ class IframeMethod extends DirectMethod
         $orderDetail = OrderFacade::detail($trans->order);
         $amount = intval($orderDetail->price * 100);
         $currency = $orderDetail->currency;
+        // convert to TL, if need
+        if ($currency != 'TL')
+        {
+            $amount = BalanceFacade::convert($amount, $currency, 'TL');
+            $currency = 'TL';
+        }
         // request to paytr
         try
         {
@@ -91,6 +98,7 @@ class IframeMethod extends DirectMethod
         }
         catch (Exception $ex)
         {
+            report($ex);
             Log::error("Paytr step 1 exception: " . $ex->getMessage());
             return new PaytrFailure($trans, __('hanoivip.paytr::paytr.failure.step1-exception'));
         }
