@@ -8,4 +8,5 @@ return [
     'report_email' => 'game.oh.vn@gmail.com',
     'api' => 'iframe',
     'token_url' => 'https://www.paytr.com/odeme/api/get-token',
+    'lang' => 'tr'
 ];

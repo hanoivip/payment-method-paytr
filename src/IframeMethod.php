@@ -68,7 +68,8 @@ class IframeMethod extends DirectMethod
                 'merchant_fail_url'=>route('paytr.failure'),
                 'timeout_limit'=>15,
                 'currency'=>$currency,
-                'test_mode'=>$test_mode
+                'test_mode'=>$test_mode,
+                'lang'=>config('paytr.lang', '')
             ];
             $response = CurlHelper::factory(config('paytr.token_url'))
             ->setPostParams($post_vals)
