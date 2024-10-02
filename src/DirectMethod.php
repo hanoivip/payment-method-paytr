@@ -5,7 +5,6 @@ namespace Hanoivip\PaymentMethodPaytr;
 use Carbon\Carbon;
 use Hanoivip\CurlHelper;
 use Hanoivip\PaymentMethodContract\IPaymentMethod;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -46,17 +45,12 @@ class DirectMethod implements IPaymentMethod
         $exists = PaytrTransaction::where('trans', $trans->trans_id)->get();
         if ($exists->isNotEmpty())
             throw new Exception('Paytr transaction already exists');
-        // try to load saved card
-        $uid = Auth::user()->getAuthIdentifier();
-        $card = PaytrCard::where('user_id', $uid)->first();
-        if (!empty($card))
-            $card = $card->toArray();
         $log = new PaytrTransaction();
         $log->trans = $trans->trans_id;
         $log->mapping = $trans->trans_id;
         $log->status = self::STATUS_INIT;
         $log->save();
-        $session = new PaytrSession($trans, $card, $this->config);
+        $session = new PaytrSession($trans, null, $this->config);
         $this->saveSession($trans->trans_id, $session);
         return $session;
     }
