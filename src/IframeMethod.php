@@ -15,6 +15,18 @@ use Hanoivip\Payment\Facades\BalanceFacade;
  */
 class IframeMethod extends DirectMethod
 {
+    private function getUserIp() {
+        if (request()->hasHeader('CF-Connecting-IP')) {
+            return request()->headers->get('CF-Connecting-IP');
+        }
+        else if (request()->hasHeader('X-Real-IP')) {
+            return request()->headers->get('X-Real-IP');
+        }
+        else {
+            return request()->ip();
+        }
+    }
+    
     public function request($trans, $params)
     {
         $record = PaytrTransaction::where('trans', $trans->trans_id)->first();
@@ -43,7 +55,7 @@ class IframeMethod extends DirectMethod
             $cfg = $session->getSecureData();
             srand(time());
             $merchant_oid = $trans->trans_id;
-            $userIp = request()->headers->get('CF-Connecting-IP');//Cloudflare proxy;
+            $userIp = $this->getUserIp();
             $no_installment = 0;
             $max_installment = 0;
             $test_mode = $this->isTestMode() ? "1" : "0";
