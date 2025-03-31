@@ -8,9 +8,10 @@ use Hanoivip\Shop\Facades\OrderFacade;
 
 trait SuccessTrait {
     function onSuccess($transId, $amount) {
+        $realAmount = $amount / 100;
         // save
         $record = PaytrTransaction::where('trans', $transId)->first();
-        $record->amount = $amount;
+        $record->amount = $realAmount;
         $record->status = DirectMethod::STATUS_SUCCESS;
         $record->save();
         // event here
@@ -19,6 +20,6 @@ trait SuccessTrait {
         // TODO: move this to payment
         $order = $record->transaction->order;
         $orderDetail = OrderFacade::detail($order);
-        event(new UserTopup($orderDetail->user_id, 0, $amount, $transId));
+        event(new UserTopup($orderDetail->user_id, 0, $realAmount, $transId));
     }
 }
