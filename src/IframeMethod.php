@@ -7,6 +7,7 @@ use Hanoivip\Shop\Facades\OrderFacade;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use Hanoivip\Payment\Facades\BalanceFacade;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Ref https://dev.paytr.com/iframe-api
@@ -59,21 +60,25 @@ class IframeMethod extends DirectMethod
             $no_installment = 0;
             $max_installment = 0;
             $test_mode = $this->isTestMode() ? "1" : "0";
+            $email = Auth::user()->email;
+            if (empty($email)) {
+                $email = Auth::user()->getAuthIdentifierName() . "@chibibomber.com";
+            }
             $user_basket = base64_encode(json_encode($this->convertCartToBasket($orderDetail->cart)));
-            $hash_str = $cfg['merchant_id'] . $userIp . $merchant_oid . config('paytr.report_email') . $amount . $user_basket . $no_installment . $max_installment . $currency. $test_mode;
+            $hash_str = $cfg['merchant_id'] . $userIp . $merchant_oid . $email . $amount . $user_basket . $no_installment . $max_installment . $currency. $test_mode;
             $paytr_token = base64_encode(hash_hmac('sha256',$hash_str.$cfg['merchant_salt'],$cfg['merchant_key'],true));
             $post_vals=[
                 'merchant_id'=>$cfg['merchant_id'],
                 'user_ip'=>$userIp,
                 'merchant_oid'=>$merchant_oid,
-                'email'=>config('paytr.report_email'),
+                'email'=>$email,
                 'payment_amount'=>$amount,
                 'paytr_token'=>$paytr_token,
                 'user_basket'=>$user_basket,
                 'debug_on'=>$test_mode,
                 'no_installment'=>$no_installment,
                 'max_installment'=>$max_installment,
-                'user_name'=>'hidden',
+                'user_name'=>Auth::user()->getAuthIdentifierName(),
                 'user_address'=>'hidden',
                 'user_phone'=>'9033366688',
                 'merchant_ok_url'=>route('paytr.success'),
