@@ -51,7 +51,7 @@ class IframeMethod extends DirectMethod
             $amount = BalanceFacade::convert($amount, $currency, 'TL');
             $currency = 'TL';
         }
-        $user = UserFacade::getUserCredentials($userId);
+        $user = UserFacade::getUserCredentials($orderDetail->user_id);
         
         // request to paytr
         try
