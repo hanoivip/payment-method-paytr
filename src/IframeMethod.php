@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Exception;
 use Hanoivip\Payment\Facades\BalanceFacade;
 use Illuminate\Support\Facades\Auth;
+use Hanoivip\User\Facades\UserFacade;
 
 /**
  * Ref https://dev.paytr.com/iframe-api
@@ -60,10 +61,7 @@ class IframeMethod extends DirectMethod
             $no_installment = 0;
             $max_installment = 0;
             $test_mode = $this->isTestMode() ? "1" : "0";
-            $email = Auth::user()->email;
-            if (empty($email)) {
-                $email = Auth::user()->getAuthIdentifierName() . "@chibibomber.com";
-            }
+            $email = $this->getUserEmail($orderDetail->user_id);
             $user_basket = base64_encode(json_encode($this->convertCartToBasket($orderDetail->cart)));
             $hash_str = $cfg['merchant_id'] . $userIp . $merchant_oid . $email . $amount . $user_basket . $no_installment . $max_installment . $currency. $test_mode;
             $paytr_token = base64_encode(hash_hmac('sha256',$hash_str.$cfg['merchant_salt'],$cfg['merchant_key'],true));
@@ -120,6 +118,14 @@ class IframeMethod extends DirectMethod
             Log::error("Paytr step 1 exception: " . $ex->getMessage());
             return new PaytrFailure($trans, __('hanoivip.paytr::paytr.failure.step1-exception'));
         }
+    }
+    
+    private function getUserEmail($userId) {
+        $user = UserFacade::getUserCredentials($userId);
+        if (empty($user->email)) {
+            return $user->name . '@no-exists.com';
+        }
+        return $user->email;
     }
     
     public function openPendingPage($trans)
