@@ -51,6 +51,8 @@ class IframeMethod extends DirectMethod
             $amount = BalanceFacade::convert($amount, $currency, 'TL');
             $currency = 'TL';
         }
+        $user = UserFacade::getUserCredentials($userId);
+        
         // request to paytr
         try
         {
@@ -61,7 +63,7 @@ class IframeMethod extends DirectMethod
             $no_installment = 0;
             $max_installment = 0;
             $test_mode = $this->isTestMode() ? "1" : "0";
-            $email = $this->getUserEmail($orderDetail->user_id);
+            $email = empty($user->email) ? $user->name . '@no-exists.com' : $user->email;
             $user_basket = base64_encode(json_encode($this->convertCartToBasket($orderDetail->cart)));
             $hash_str = $cfg['merchant_id'] . $userIp . $merchant_oid . $email . $amount . $user_basket . $no_installment . $max_installment . $currency. $test_mode;
             $paytr_token = base64_encode(hash_hmac('sha256',$hash_str.$cfg['merchant_salt'],$cfg['merchant_key'],true));
@@ -76,9 +78,9 @@ class IframeMethod extends DirectMethod
                 'debug_on'=>$test_mode,
                 'no_installment'=>$no_installment,
                 'max_installment'=>$max_installment,
-                'user_name'=>Auth::user()->getAuthIdentifierName(),
-                'user_address'=>'hidden',
-                'user_phone'=>'9033366688',
+                'user_name'=> $user->name,
+                'user_address'=> 'hidden',
+                'user_phone'=> '9033366688',
                 'merchant_ok_url'=>route('paytr.success'),
                 'merchant_fail_url'=>route('paytr.failure'),
                 'timeout_limit'=>15,
